@@ -21,5 +21,7 @@ COPY --from=builder ./ ./
 
 EXPOSE 3000
 
+ENV NODE_ENV=release
+
 
 ENTRYPOINT ["npm", "run", "start"]
