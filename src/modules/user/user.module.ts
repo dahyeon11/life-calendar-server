@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
-import { JWTModule } from '../util/jwt/jwt.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
@@ -12,7 +11,7 @@ import { ConfigModule } from '@nestjs/config';
       : (process.env.NODE_ENV === 'localhost') ? '.env.localhost'
       : (process.env.NODE_ENV === 'release') ? '.env.release' : ''
     }),
-    JWTModule
+    //JWTModule
   ],
   controllers: [UserController],
   providers: [UserService]

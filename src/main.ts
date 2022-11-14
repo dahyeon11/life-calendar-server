@@ -12,6 +12,11 @@ async function bootstrap() {
     enableDebugMessages: true
   }
   setupSwagger(app)
+  app.enableCors({
+    origin: true,
+    methods: ['post', 'get', 'patch', 'put', 'options', 'delete'],
+    credentials: true
+  })
   app.useGlobalPipes(new ValidationPipe(validatorOptions))
   await app.listen(3000);
 }

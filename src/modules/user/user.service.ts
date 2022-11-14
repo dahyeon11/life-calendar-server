@@ -1,8 +1,8 @@
-import { BadRequestException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import mongoose from 'mongoose';
 import { UserDocument, UserSchema } from 'schema/schema.md';
 import { GlobalService } from '../global/global.service';
-import { JWTService } from '../util/jwt/jwt.service';
+import { JWTService } from '../global/jwt.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { SignInDto } from './dto/signin-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -55,5 +55,18 @@ export class UserService {
     } else {
       throw new BadRequestException({ message: 'bad request', errorMessage: `잘못된 로그인 정보입니다.` })
     }
+  }
+
+  async getUser(id) {
+    const connection = await this.connections.get('gateway')
+    const userModel = connection.model('user', UserSchema)
+
+    const user = await userModel.findOne({ id: id }, ['id', 'name', 'createdAt']).lean()
+
+    if(!user) {
+      throw new NotFoundException({ message: 'NotFoundException', errorMessage: '유저 정보가 없습니다.' })
+    }
+
+    return { message: 'successful', data: { user: user } }
   }
 }
