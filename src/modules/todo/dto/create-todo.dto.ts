@@ -13,6 +13,6 @@ export class CreateTodoDto {
 
     @ApiProperty({ type: Date, description: '예약 날짜' })
     @IsISO8601()
-    reservation: string;
+    date: string;
 }
 

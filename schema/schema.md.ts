@@ -12,7 +12,7 @@ export interface TodoDocument {
     user_id: string;
     title: string;
     content: string;
-    reservation: Date;
+    date: Date;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -42,7 +42,7 @@ export const  TodoSchema = new mongoose.Schema<TodoDocument>({
     title: { type: String, required: true },
     content: { type: String, required: true },
     user_id: { type: String, required: true, select: false },
-    reservation: { type: Date, required: true }
+    date: { type: Date, required: true }
 },
 {
     timestamps: true,
