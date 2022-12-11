@@ -12,7 +12,7 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { SignInDto } from './dto/signin-user.dto';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthorizationGuard } from '../guards/authorization.guard';
 import { GetUser } from '../util/getUserId';
 
@@ -40,6 +40,7 @@ export class UserController {
   }
 
   @Get()
+  @ApiBearerAuth('jwt')
   @ApiOperation({
     summary: '회원 정보 조회',
     description: '사용자 정보를 조회합니다.',

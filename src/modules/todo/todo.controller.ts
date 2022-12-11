@@ -9,6 +9,7 @@ import {
   UseGuards,
   Req,
   Query,
+  HttpStatus,
 } from '@nestjs/common';
 import { TodoService } from './todo.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
@@ -23,6 +24,8 @@ import {
 import { AuthorizationGuard } from '../guards/authorization.guard';
 import { GetUser } from '../util/getUserId';
 import { UpdateTodoDto } from './dto/update-todo.dto';
+import { ErrorResponse } from '../util/common-error-decorator';
+import { CommonError } from '../util/schema/common-error.definition.dto';
 
 @Controller('todo')
 @ApiTags('todo')
@@ -33,6 +36,19 @@ export class TodoController {
 
   @Post()
   @ApiOperation({ summary: '할 일 생성', description: '할 일을 생성합니다.' })
+  @ErrorResponse(HttpStatus.BAD_REQUEST, CommonError.VALIDATION_FAILURE)
+  @ErrorResponse(HttpStatus.NON_AUTHORITATIVE_INFORMATION, [
+    CommonError.UNAUTHORIZED_EXPIRED,
+    CommonError.UNAUTHORIZED_INVALID,
+  ])
+  @ErrorResponse(
+    HttpStatus.PRECONDITION_FAILED,
+    CommonError.UNAUTHORIZED_PRECONDITION_FAILED,
+  )
+  @ErrorResponse(
+    HttpStatus.SERVICE_UNAVAILABLE,
+    CommonError.SERVICE_UNAVAILABLE,
+  )
   createTodo(@Body() createTodoDto: CreateTodoDto, @GetUser() user: any) {
     return this.todoService.createTodo(createTodoDto, user);
   }
@@ -54,6 +70,19 @@ export class TodoController {
     required: false,
     example: '12',
   })
+  @ErrorResponse(HttpStatus.BAD_REQUEST, CommonError.VALIDATION_FAILURE)
+  @ErrorResponse(HttpStatus.NON_AUTHORITATIVE_INFORMATION, [
+    CommonError.UNAUTHORIZED_EXPIRED,
+    CommonError.UNAUTHORIZED_INVALID,
+  ])
+  @ErrorResponse(
+    HttpStatus.PRECONDITION_FAILED,
+    CommonError.UNAUTHORIZED_PRECONDITION_FAILED,
+  )
+  @ErrorResponse(
+    HttpStatus.SERVICE_UNAVAILABLE,
+    CommonError.SERVICE_UNAVAILABLE,
+  )
   getTodo(
     @GetUser() user: any,
     @Query('year') year?: string,
@@ -68,6 +97,19 @@ export class TodoController {
     name: 'id',
     description: '삭제할 할 일의 _id (ObjectId)',
   })
+  @ErrorResponse(HttpStatus.BAD_REQUEST, CommonError.VALIDATION_FAILURE)
+  @ErrorResponse(HttpStatus.NON_AUTHORITATIVE_INFORMATION, [
+    CommonError.UNAUTHORIZED_EXPIRED,
+    CommonError.UNAUTHORIZED_INVALID,
+  ])
+  @ErrorResponse(
+    HttpStatus.PRECONDITION_FAILED,
+    CommonError.UNAUTHORIZED_PRECONDITION_FAILED,
+  )
+  @ErrorResponse(
+    HttpStatus.SERVICE_UNAVAILABLE,
+    CommonError.SERVICE_UNAVAILABLE,
+  )
   deleteDiary(@Param('id') id: string) {
     return this.todoService.deleteTodo(id);
   }
@@ -81,6 +123,19 @@ export class TodoController {
     name: 'id',
     description: '삭제할 할 일의 _id (ObjectId)',
   })
+  @ErrorResponse(HttpStatus.BAD_REQUEST, CommonError.VALIDATION_FAILURE)
+  @ErrorResponse(HttpStatus.NON_AUTHORITATIVE_INFORMATION, [
+    CommonError.UNAUTHORIZED_EXPIRED,
+    CommonError.UNAUTHORIZED_INVALID,
+  ])
+  @ErrorResponse(
+    HttpStatus.PRECONDITION_FAILED,
+    CommonError.UNAUTHORIZED_PRECONDITION_FAILED,
+  )
+  @ErrorResponse(
+    HttpStatus.SERVICE_UNAVAILABLE,
+    CommonError.SERVICE_UNAVAILABLE,
+  )
   updateDiary(@Param('id') id: string, @Body() updateTodoDto: UpdateTodoDto) {
     return this.todoService.updateTodo(id, updateTodoDto);
   }
