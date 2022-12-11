@@ -1,4 +1,10 @@
-import { Inject, Injectable, ServiceUnavailableException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  ServiceUnavailableException,
+} from '@nestjs/common';
+import { GlobalService } from '../global/global.service';
 import { TodoSchema } from 'schema/schema.md';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
@@ -7,36 +13,97 @@ import mongoose from 'mongoose';
 @Injectable()
 export class TodoService {
   constructor(
-    @Inject('DBConnections') private readonly connections: Map<string, Promise<mongoose.Connection>>,
+    private readonly GlobalService: GlobalService,
+    @Inject('DBConnections')
+    private readonly connections: Map<string, Promise<mongoose.Connection>>,
   ) {}
 
   async createTodo(createTodoDto: CreateTodoDto, user: any) {
-    const connection = await this.connections.get('gateway')
-    const TodoModel = connection.model('todo', TodoSchema)
+    const connection = await this.connections.get('gateway');
+    const TodoModel = connection.model('todo', TodoSchema);
 
     const queryResult = await TodoModel.create({
       ...createTodoDto,
-      user_id: user.id
+      user_id: user.id,
+    });
+
+    if (queryResult) {
+      return { message: 'successful', data: queryResult };
+    } else {
+      throw new ServiceUnavailableException({
+        message: 'ServiceUnavailableException',
+        errorMessage: '데이터베이스 연결 및 기타 서버 오류입니다.',
+      });
+    }
+  }
+
+  async getTodo(id?: string, year?: string, month?: string) {
+    const connection = await this.connections.get('gateway');
+    const TodoModel = connection.model('todo', TodoSchema);
+
+    const setTimestampFilter = (year: string, month: string) => {
+      if (!year && !month) return {};
+      const timestampRange = this.GlobalService.generateTimestampRange(
+        year,
+        month,
+      );
+      return {
+        createdAt: {
+          $gte: timestampRange.startDate,
+          $lte: timestampRange.endDate,
+        },
+      };
+    };
+
+    const todo = await TodoModel.find({
+      $and: [{ user_id: id }, setTimestampFilter(year, month)],
     })
+      .limit(10)
+      .select(['-createdAt', '-updatedAt'])
+      .lean();
 
-    if(queryResult) {
-      return { message: 'successful', data: queryResult }
+    if (todo) {
+      return { message: 'successful', data: todo };
     } else {
-      throw new ServiceUnavailableException({ message: 'ServiceUnavailableException', errorMessage: '데이터베이스 연결 및 기타 서버 오류입니다.' })
+      throw new ServiceUnavailableException({
+        message: 'ServiceUnavailableException',
+        errorMessage: '데이터베이스 연결 및 기타 서버 오류입니다.',
+      });
     }
   }
 
-  async getTodo(id?: string) {
-    const connection = await this.connections.get('gateway')
-    const TodoModel = connection.model('todo', TodoSchema)
+  async deleteTodo(id: string) {
+    const connection = await this.connections.get('gateway');
+    const TodoModel = connection.model('todo', TodoSchema);
 
-    const todo = await TodoModel.find({ user_id: id }).limit(10).select(['-createdAt', '-updatedAt']).lean()
+    const result = await TodoModel.deleteOne({ _id: id });
 
-    if(todo) {
-      return { message: 'successful', data: todo }
+    if (result.deletedCount) {
+      return { message: 'successful' };
     } else {
-      throw new ServiceUnavailableException({ message: 'ServiceUnavailableException', errorMessage: '데이터베이스 연결 및 기타 서버 오류입니다.' })
+      throw new BadRequestException({
+        message: 'BadRequestException',
+        errorMessage: '존재하지 않는 할일입니다.',
+      });
     }
   }
 
+  async updateTodo(id: string, updateTodoDto: UpdateTodoDto) {
+    const connection = await this.connections.get('gateway');
+    const TodoModel = connection.model('todo', TodoSchema);
+
+    const result = await TodoModel.updateOne(
+      { _id: id },
+      { $set: updateTodoDto },
+    );
+
+    if (result.matchedCount) {
+      return { message: 'successful' };
+    } else {
+      throw new BadRequestException({
+        message: 'BadRequestException',
+        errorMessage: '존재하지 않는 할일입니다.',
+      });
+    }
+  }
 }

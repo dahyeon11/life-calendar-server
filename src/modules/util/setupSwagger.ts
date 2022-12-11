@@ -9,10 +9,14 @@ export function setupSwagger(app: INestApplication): void {
     .setTitle('Life Calendar API')
     .setDescription('Life Calendar API 문서입니다.')
     .setVersion('1.0.0')
-    .addBearerAuth({
-      type: 'http',
-      in: 'header',
-    }, 'jsonwebtoken')
+    .addBearerAuth(
+      {
+        type: 'http',
+        in: 'header',
+      },
+      'jsonwebtoken',
+    )
+    .addServer('https://life-calendar.dahyeon.us', '릴리즈 서버')
     .addServer('http://kai.dahyeon.us:10200', '개발 서버')
     .build();
 
